@@ -1,1 +1,59 @@
+# Fikstür ve puan durumu XML'lerini günceller.
+# Tetikleme: cron-job.org bu iş akışını GitHub API üzerinden başlatır (workflow_dispatch).
+# Elle çalıştırmak için: GitHub > Actions > "Fikstür ve puan durumu" > Run workflow
+
+name: Fikstür ve puan durumu
+
+on:
+  workflow_dispatch:
+  # Yedek zamanlama istersen aç (saatler UTC'dir; Türkiye = UTC+3):
+  # schedule:
+  #   - cron: "0 6 * * *"
+
+permissions:
+  contents: write          # güncel XML'leri repoya yazabilmek için
+
+concurrency:
+  group: veri-guncelle     # iki çalışma üst üste binmesin
+  cancel-in-progress: false
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Repoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Paketleri kur
+        run: pip install -r requirements.txt
+
+      # Chrome GitHub'ın Ubuntu makinesinde hazır gelir; uygun chromedriver'ı Selenium kendisi indirir.
+      - name: Puan durumu
+        run: python scripts/altyapi_puanDurumu.py
+
+      # Puan durumu hata verse bile fikstür denensin
+      - name: Fikstür
+        if: ${{ !cancelled() }}
+        run: python scripts/AltyapiFikstur.py
+
+      # Sadece XML gerçekten değiştiyse commit atılır
+      - name: Değiştiyse kaydet
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add xml/
+          if git diff --cached --quiet; then
+            echo "XML'lerde değişiklik yok."
+          else
+            git commit -m "Veri güncellendi: $(TZ=Europe/Istanbul date +'%d.%m.%Y %H:%M')"
+            git push
+          fi
 
