@@ -139,7 +139,7 @@ def xmlOlustur():
         Setler.text = result[a][8]
         tree = ET.ElementTree(root)
 
-        tree.write('/fikstür.xml')
+        tree.write(os.path.join(XML_KLASOR, 'fikstur.xml'), encoding='utf-8', xml_declaration=True)
 
 
 tabloolustur()
