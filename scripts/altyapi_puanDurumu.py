@@ -175,7 +175,7 @@ def xmlyaz():
                 SPAV.text = result[a][10]
                 tree = ET.ElementTree(root)
 
-                tree.write('/puandurumu.xml')
+                tree.write(os.path.join(XML_KLASOR, 'puandurumu.xml'), encoding='utf-8', xml_declaration=True)
 
 tabloolustur()
 app = altyapi()
