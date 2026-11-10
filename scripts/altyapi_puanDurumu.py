@@ -10,26 +10,13 @@ import time
 import sqlite3
 import xml.etree.ElementTree as ET
 
-import os
-
-# Repo kök klasörü (scripts/ klasörünün bir üstü). DB ve XML yolları buna göre.
-KOK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-XML_KLASOR = os.path.join(KOK, "xml")
-os.makedirs(XML_KLASOR, exist_ok=True)
-
-con = sqlite3.connect(os.path.join(KOK, "vbAltyapi.db"))
+con = sqlite3.connect("vbAltyapi.db")
 cursor = con.cursor()
 class altyapi:
 
         def __init__(self):
             self.browserProfile = webdriver.ChromeOptions()
             self.browserProfile.add_experimental_option('prefs', {'intl.accept_languages': 'en,en_US'})
-            # GitHub Actions'ta ekransız (headless) çalış; kendi bilgisayarında pencere açılmaya devam eder
-            if os.environ.get("CI"):
-                self.browserProfile.add_argument("--headless=new")
-                self.browserProfile.add_argument("--no-sandbox")
-                self.browserProfile.add_argument("--disable-dev-shm-usage")
-                self.browserProfile.add_argument("--window-size=1920,1080")
             service = Service()
             self.browser = webdriver.Chrome(service=service, options=self.browserProfile)
             self.siralama = []
@@ -186,9 +173,9 @@ def xmlyaz():
                 VerilenSet.text = result[a][8]
                 SAV.text = result[a][9]
                 SPAV.text = result[a][10]
-    # Dosya döngünün dışında, bir kez ve UTF-8 olarak yazılır
-    tree = ET.ElementTree(root)
-    tree.write(os.path.join(XML_KLASOR, 'puandurumu.xml'), encoding='utf-8', xml_declaration=True)
+                tree = ET.ElementTree(root)
+
+                tree.write('/puandurumu.xml')
 
 tabloolustur()
 app = altyapi()
@@ -200,6 +187,7 @@ app.secim("KK", "KKSL", "20638*AD31DB1A-5975-4377-BA5C-8CCF69B5055C", "Vakıfban
 app.secim("YK", "YKSL", "20637*6CF95B79-E251-4F24-A1F8-804B434FFBE3", "Vakıfbank A", "Yıldız A")
 app.secim("YK", "YKSL", "20636*3E78AFA3-530A-40CC-860C-DF883C7419B3", "Vakıfbank B", "Yıldız B")
 app.secim("MdK", "MDKSL", "20641*FBF43E38-2E6D-48A8-B56B-EB287A4BE704", "Vakıfbank", "Midi")
+app.secim("MdK", "MDK1L", "20808*1DA6AC3F-C501-4B68-B329-07A007CCFEE9", "Vakıfbank", "Midi B")
 
 #final etabı
 #app.secim("GK", "GKSL", "5615*3D7C167B-5EC3-4891-B942-06D514858310", "Vakıfbank", "Genç Final")
